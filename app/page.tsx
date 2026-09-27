@@ -1,0 +1,91 @@
+"use client";
+
+import {useEffect, useRef, useState} from "react";
+import {ArrowUpRight,ArrowRight,ArrowDown,ArrowLeft,MapPin,Camera as Instagram,Menu as MenuIcon,X,Plus,Phone,Clock,MessageCircle,ExternalLink} from "lucide-react";
+import {Tabs,TabsList,TabsTrigger,TabsContent} from "@/components/ui/tabs";
+import {Dialog,DialogContent,DialogTitle,DialogDescription,DialogClose,DialogTrigger} from "@/components/ui/dialog";
+import {menu,campaigns} from "./menu-data";
+
+const instagram="https://www.instagram.com/civeta.ve/";
+const whatsapp="https://wa.me/584122483825";
+const contact=(text:string)=>`${whatsapp}?text=${encodeURIComponent(text)}`;
+const maps=(place:string)=>`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`;
+const places=[{name:"C.C. Costa América",address:"Av. Las Américas, Puerto Ordaz, Bolívar.",query:"Civeta C.C. Costa América Puerto Ordaz Venezuela"},{name:"Aeropuerto Manuel Carlos Piar",address:"Aeropuerto Internacional Manuel Carlos Piar, Puerto Ordaz.",query:"Aeropuerto Internacional Manuel Carlos Piar Puerto Ordaz Venezuela"}];
+const navigation=[{name:"Inicio",id:"inicio"},{name:"Menú",id:"menu"},{name:"Experiencia",id:"experiencia"},{name:"Novedades",id:"novedades"},{name:"Ubicación",id:"ubicacion"},{name:"Contacto",id:"contacto"}];
+const gallery=[
+{src:"mesa-civeta.jpg",alt:"Mesa de Civeta con bollería, café y jugo",label:"El primer encuentro del día",category:"CAFÉ Y DESAYUNO"},
+{src:"bebidas.jpg",alt:"Bebidas de Civeta compartidas en la mesa",label:"Un brindis por los buenos momentos",category:"PARA COMPARTIR"},
+{src:"cocina-civeta.jpg",alt:"Plato de la cocina de Civeta con mariscos y arroz",label:"Sabores que invitan a descubrir",category:"COCINA DE AUTOR"},
+{src:"terraza-civeta.jpg",alt:"Una comensal disfrutando un plato en la terraza de Civeta",label:"Disfrutar, sin prisa",category:"MOMENTOS CIVETA"},
+{src:"caramelo-cafe.jpg",alt:"Postre Caramelo y café de Civeta",label:"Siempre hay espacio para un postre",category:"UN FINAL DULCE"},
+{src:"arepas.jpg",alt:"Desayuno para compartir en Civeta",label:"El gusto de compartir",category:"EN LA MESA"}
+];
+const highlights=[
+{name:"Latte",text:"Tu pausa, en una taza.",src:"latte-civeta.jpg",alt:"Preparación de un latte en Civeta",className:"latte-shot",tab:"cafe",category:"CAFÉ DE ESPECIALIDAD"},
+{name:"Caramelo y café",text:"Un encuentro dulce de texturas.",src:"caramelo-cafe.jpg",alt:"Postre Caramelo y café",className:"dessert-shot",tab:"producto",category:"PARA CERRAR CON GUSTO"},
+{name:"Pasticho",text:"Un motivo para sentarse a la mesa.",src:"terraza-civeta.jpg",alt:"Pasticho de Civeta en una mesa de la terraza",className:"pasticho-shot",tab:"consulta",category:"COCINA DE AUTOR"},
+{name:"Matcha latte",text:"Otra forma de hacer una pausa.",src:"matcha-civeta.jpg",alt:"Matcha latte de Civeta",className:"matcha-shot",tab:"cafe",category:"CAFÉ Y TÉ"}
+];
+
+function Brand({large=false}:{large?:boolean}){return <a className={`brand ${large?"brand-large":""}`} href="#inicio" aria-label="Civeta, volver al inicio"><span className="logo-window"><img src="/assets/logo-civeta.jpg" width="150" height="150" alt="Civeta"/></span></a>}
+function OutLink({href,children,className=""}:{href:string;children:React.ReactNode;className?:string}){return <a href={href} className={className} target="_blank" rel="noopener noreferrer">{children}</a>}
+
+export default function Home(){
+ const [mobileOpen,setMobileOpen]=useState(false);
+ const [scrolled,setScrolled]=useState(false);
+ const [category,setCategory]=useState("cafe");
+ const [photo,setPhoto]=useState<number|null>(null);
+ const [place,setPlace]=useState(0);
+ const galleryButtons=useRef<(HTMLButtonElement|null)[]>([]);
+ const lastPhoto=useRef(0);
+ useEffect(()=>{const onScroll=()=>setScrolled(window.scrollY>24);onScroll();window.addEventListener("scroll",onScroll,{passive:true});return()=>window.removeEventListener("scroll",onScroll)},[]);
+ useEffect(()=>{if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){const items=document.querySelectorAll(".reveal");const observer=new IntersectionObserver((entries)=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add("is-visible");observer.unobserve(e.target)}}),{threshold:.08});items.forEach(x=>{x.classList.add("reveal-ready");observer.observe(x)});return()=>observer.disconnect()}},[]);
+ const chooseCategory=(id:string)=>{setCategory(id);document.getElementById("menu")?.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})};
+ const closePhoto=()=>setPhoto(null);
+ return <>
+ <a className="skip-link" href="#menu">Saltar al menú</a>
+ <header className={`site-header ${scrolled?"scrolled":""}`}>
+  <Brand/>
+  <nav aria-label="Navegación principal">{navigation.map(n=><a key={n.id} href={`#${n.id}`}>{n.name}</a>)}</nav>
+  <div className="header-actions"><a className="button button-small button-cream header-menu" href="#menu">Ver menú <ArrowUpRight size={16}/></a>
+   <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
+    <DialogTrigger asChild><button className="mobile-toggle" aria-label="Abrir navegación"><MenuIcon size={25}/></button></DialogTrigger>
+    <DialogContent className="mobile-menu" showCloseButton={false}>
+     <div className="mobile-menu-head"><Brand/><DialogClose asChild><button className="icon-button" aria-label="Cerrar navegación"><X size={25}/></button></DialogClose></div>
+     <DialogTitle className="sr-only">Navegación de Civeta</DialogTitle><DialogDescription className="sr-only">Explora el menú, la experiencia y la ubicación de Civeta.</DialogDescription>
+     <nav aria-label="Navegación móvil">{navigation.map((n,i)=><a key={n.id} onClick={()=>setMobileOpen(false)} href={`#${n.id}`}><span>{n.name}</span><ArrowUpRight size={25}/></a>)}</nav>
+     <OutLink className="button button-cream" href={contact("Hola, Civeta. Quisiera hacer una consulta.")}>Contactar por WhatsApp <MessageCircle size={18}/></OutLink>
+     <p>COCINA DE AUTOR · CAFÉ DE ESPECIALIDAD</p>
+    </DialogContent>
+   </Dialog>
+  </div>
+ </header>
+ <main>
+ <section className="hero" id="inicio" aria-labelledby="hero-title">
+  <div className="hero-content"><p className="eyebrow"><span className="triangle"/> PUERTO ORDAZ, VENEZUELA</p><h1 id="hero-title"><span className="sr-only">Civeta. </span>El gusto de<br/>{" "}<em>encontrarnos.</em></h1><p className="hero-intro">Cocina de autor y café de especialidad.<br/>{" "}Una invitación a disfrutar, sin prisa.</p><div className="actions"><a className="button button-cream" href="#menu">Explorar menú <ArrowUpRight size={19}/></a><a className="text-link" href="#ubicacion">Cómo llegar <MapPin size={17}/></a></div><div className="hero-note"><span className="short-line"/> COMER. COMPARTIR. VOLVER.</div></div>
+  <div className="hero-visual"><img src="/assets/mesa-civeta.jpg" className="hero-photo" width="720" height="960" alt="Bollería, jugo y café en una mesa de Civeta" fetchPriority="high"/><div className="hero-caption"><span>UN MOMENTO MUY CIVETA</span><a href="#experiencia" aria-label="Descubrir la experiencia Civeta"><ArrowDown size={21}/></a></div></div>
+ </section>
+ <div className="brand-ribbon"><span>COCINA DE AUTOR</span><span className="triangle"/><span>CAFÉ DE ESPECIALIDAD</span><span className="triangle"/><span>PUERTO ORDAZ</span></div>
+ <section className="experience section" id="experiencia" aria-labelledby="experience-title">
+  <div className="experience-heading reveal"><p className="eyebrow">LA EXPERIENCIA CIVETA</p><h2 id="experience-title">Donde los sabores<br/>{" "}se encuentran y<br/>{" "}<em>la alegría se comparte.</em></h2></div>
+  <div className="experience-aside reveal"><p>Un café para empezar. Una mesa para conversar. Un plato que invita a quedarse.</p><p>Descubre la cocina de autor de Civeta, su café de especialidad y sus espacios en Puerto Ordaz.</p><a className="text-link" href="#momentos">Conoce nuestros momentos <ArrowUpRight size={17}/></a><div className="experience-pair"><img src="/assets/bebidas.jpg" width="720" height="960" alt="Bebidas para compartir en Civeta" loading="lazy"/><img src="/assets/arepas.jpg" width="720" height="960" alt="Un desayuno en Civeta" loading="lazy"/></div></div>
+ </section>
+ <section className="highlights section" aria-labelledby="highlights-title">
+  <div className="section-heading reveal"><div><p className="eyebrow">UN POCO DE LO NUESTRO</p><h2 id="highlights-title">Déjate <em>tentar.</em></h2></div><a className="text-link" href="#menu">Descubrir el menú <ArrowUpRight size={18}/></a></div>
+  <div className="highlights-grid">{highlights.map((h,i)=><article className={`highlight highlight-${i} reveal`} key={h.name}><div className={`highlight-image ${h.className}`}><img src={`/assets/${h.src}`} alt={h.alt} loading="lazy"/></div><p className="eyebrow">{h.category}</p><div className="highlight-heading"><h3>{h.name}</h3>{h.tab==="consulta"?<OutLink className="round-link" href={contact("Hola, Civeta. Quisiera consultar disponibilidad y precio del pasticho.")}><ArrowUpRight size={20}/><span className="sr-only">Consultar por el pasticho</span></OutLink>:h.tab==="producto"?<a className="round-link" href="#producto" aria-label="Descubrir Caramelo y café"><ArrowUpRight size={20}/></a>:<button className="round-link" onClick={()=>chooseCategory(h.tab)} aria-label={`Ver ${h.name} en el menú`}><ArrowUpRight size={20}/></button>}</div><p className="highlight-description">{h.text}</p></article>)}</div>
+ </section>
+ <section className="menu-section section" id="menu" aria-labelledby="menu-title">
+  <div className="menu-top reveal"><div><p className="eyebrow"><span className="triangle"/> A LA CARTA</p><h2 id="menu-title">¿Qué te provoca <em>hoy?</em></h2></div><p>Explora una selección de nuestra carta.<br/>{" "}Elige tu momento, encuentra tu antojo.</p></div>
+  <Tabs value={category} onValueChange={setCategory} className="menu-tabs"><TabsList className="menu-category-list" aria-label="Categorías del menú" variant="line">{menu.map(c=><TabsTrigger className="category-tab" key={c.id} value={c.id}>{c.label}</TabsTrigger>)}</TabsList>{menu.map(c=><TabsContent className="menu-panel" key={c.id} value={c.id}><div className="menu-panel-title"><h3>{c.subtitle}</h3><span>{String(c.items.length).padStart(2,"0")} OPCIONES</span></div><div className="dishes">{c.items.map(d=><article className="dish" key={d.name}><div className="dish-title"><h4>{d.name}</h4><span>{d.price}</span></div><p>{d.description}</p>{d.note&&<small>{d.note}</small>}</article>)}</div></TabsContent>)}</Tabs>
+  <div className="menu-foot"><p>Precios en euros (€), con IVA, según el menú consultado. El establecimiento utiliza la tasa del euro del BCV. Confirma precios y disponibilidad al pedir.</p><div><OutLink className="button button-green" href="/assets/menu-civeta.pdf">Ver carta completa <ExternalLink size={17}/></OutLink><OutLink className="text-link" href={contact("Hola, Civeta. Quisiera consultar el menú y hacer un pedido.")}>Pedir por WhatsApp <ArrowUpRight size={16}/></OutLink></div></div>
+ </section>
+ <section className="product-story" id="producto" aria-labelledby="product-title"><div className="product-photo"><img src="/assets/caramelo-cafe.jpg" width="2268" height="4032" alt="Caramelo y café: postre de Civeta presentado sobre un plato blanco" loading="lazy"/></div><div className="product-content reveal"><p className="eyebrow"><span className="triangle"/> EL LADO DULCE DE CIVETA</p><h2 id="product-title">Caramelo<br/>{" "}<em>y café.</em></h2><p>Mousse de café con un centro cremoso de caramelo y una textura crujiente de chocolate y café.</p><span className="product-note">Para cerrar la comida.<br/>{" "}O para que sea el motivo del encuentro.</span><OutLink className="button button-cream" href={contact("Hola, Civeta. Quisiera consultar por el postre Caramelo y café.")}>Me provoca <ArrowUpRight size={18}/></OutLink></div></section>
+ <section className="moments section" id="momentos" aria-labelledby="moments-title"><div className="section-heading reveal"><div><p className="eyebrow">ASÍ SE VIVE CIVETA</p><h2 id="moments-title">Momentos para <em>volver.</em></h2></div><p>En la mesa pasan<br/>{" "}las mejores cosas.</p></div><div className="gallery">{gallery.map((g,i)=><button ref={el=>{galleryButtons.current[i]=el}} className={`gallery-item gallery-${i} reveal`} onClick={()=>{lastPhoto.current=i;setPhoto(i)}} aria-label={`Ampliar fotografía: ${g.label}`} key={g.src}><img src={`/assets/${g.src}`} alt={g.alt} loading="lazy"/><span className="gallery-overlay"><span>{g.category}</span><Plus size={24}/></span></button>)}</div><div className="instagram-line"><p><Instagram size={18}/> Más momentos en <strong>@civeta.ve</strong></p><OutLink href={instagram} className="text-link">Seguir en Instagram <ArrowUpRight size={18}/></OutLink></div></section>
+ <section className="news section" id="novedades" aria-labelledby="news-title">{campaigns.length>0?campaigns.map(c=><article key={c.title}><img src={c.image} alt={c.title} loading="lazy"/><h2 id="news-title">{c.title}</h2><p>{c.description}</p><OutLink className="text-link" href={c.url}>Conocer más <ArrowUpRight size={18}/></OutLink></article>):<><div className="news-label"><Instagram size={25}/><p className="eyebrow">NOVEDADES & COMUNIDAD</p></div><div><h2 id="news-title">La conversación<br/>{" "}<em>sigue en Instagram.</em></h2><p>Descubre las publicaciones de Civeta, sus sabores y los momentos que se comparten en la mesa.</p><OutLink className="text-link" href={instagram}>Ver novedades de Civeta <ArrowUpRight size={18}/></OutLink></div></>}</section>
+ <section className="location section" id="ubicacion" aria-labelledby="location-title"><div className="location-info reveal"><p className="eyebrow">AQUÍ NOS ENCONTRAMOS</p><h2 id="location-title">Tu próxima<br/>{" "}<em>buena mesa.</em></h2><div className="location-options" role="group" aria-label="Elegir ubicación">{places.map((p,i)=><button key={p.name} className={place===i?"selected":""} aria-pressed={place===i} onClick={()=>setPlace(i)}><MapPin size={19}/><span><strong>{p.name}</strong><span>{p.address}</span></span><ArrowUpRight size={17}/></button>)}</div><div className="hours"><Clock size={20}/><div><strong>Lunes a domingo</strong><span>7:00 a. m. – medianoche</span><OutLink href={contact("Hola, Civeta. ¿Me confirman el horario para visitarlos hoy?")}>Confirmar horario de mi visita</OutLink></div></div><OutLink className="button button-green" href={maps(places[place].query)}>Cómo llegar <ArrowUpRight size={18}/></OutLink></div><div className="map-wrap"><iframe key={place} title={`Mapa de ${places[place].name}`} src={`https://www.google.com/maps?q=${encodeURIComponent(places[place].query)}&output=embed&hl=es`} loading="lazy" referrerPolicy="no-referrer-when-downgrade"/><div className="map-caption"><MapPin size={16}/><span>{places[place].name} · Puerto Ordaz</span><OutLink href={maps(places[place].query)}><ArrowUpRight size={18}/><span className="sr-only">Abrir mapa en Google Maps</span></OutLink></div></div></section>
+ <section className="closing" id="contacto" aria-labelledby="contact-title"><img src="/assets/bebidas.jpg" alt="Bebidas para compartir en una mesa de Civeta" loading="lazy"/><div className="closing-shade"/><div className="closing-content"><p className="eyebrow">SIEMPRE ES UN BUEN MOMENTO</p><h2 id="contact-title">Nos vemos <em>en Civeta.</em></h2><p>Ven por un café. Quédate por el momento.</p><div className="actions"><a href="#menu" className="button button-cream">Ver menú <ArrowUpRight size={18}/></a><OutLink href={contact("Hola, Civeta. Quisiera hacer una consulta.")} className="button button-outline">Contactar por WhatsApp <MessageCircle size={18}/></OutLink><a href="#ubicacion" className="text-link">Cómo llegar <MapPin size={17}/></a></div></div></section>
+ </main>
+ <footer><div className="footer-main"><div className="footer-brand"><Brand large/><p>Cocina de autor y<br/>{" "}café de especialidad.</p></div><div className="footer-col"><h3>Descubre</h3>{navigation.filter(n=>n.id!=="contacto").map(n=><a key={n.id} href={`#${n.id}`}>{n.name}</a>)}</div><div className="footer-col"><h3>Visítanos</h3><a href="#ubicacion">C.C. Costa América</a><a href="#ubicacion" onClick={()=>setPlace(1)}>Aeropuerto Manuel Carlos Piar</a><p>Puerto Ordaz, Bolívar<br/>{" "}Lunes a domingo<br/>{" "}7:00 a. m. – medianoche</p></div><div className="footer-col"><h3>Conversemos</h3><OutLink href={whatsapp}>+58 412 248 3825 <ArrowUpRight size={14}/></OutLink><OutLink href={instagram}>@civeta.ve <Instagram size={14}/></OutLink><OutLink href="http://civetavzla.com/">civetavzla.com <ArrowUpRight size={14}/></OutLink><a href="tel:+584122483825">Llamar <Phone size={14}/></a></div></div><div className="footer-bottom"><p>Civeta · J-41173424-1</p><span>Propuesta visual independiente · Sitio de demostración</span><a href="#inicio">Volver arriba ↑</a></div></footer>
+ <Dialog open={photo!==null} onOpenChange={o=>{if(!o)closePhoto()}}><DialogContent className="lightbox" showCloseButton={false} onCloseAutoFocus={e=>{e.preventDefault();galleryButtons.current[lastPhoto.current]?.focus()}} onKeyDown={e=>{if(e.key==="ArrowRight"){e.preventDefault();setPhoto(p=>p===null?0:(p+1)%gallery.length)}if(e.key==="ArrowLeft"){e.preventDefault();setPhoto(p=>p===null?0:(p+gallery.length-1)%gallery.length)}}}><DialogTitle className="sr-only">{photo!==null?gallery[photo].label:"Fotografías de Civeta"}</DialogTitle><DialogDescription className="sr-only">Usa las flechas para ver más fotografías y Escape para cerrar.</DialogDescription><DialogClose asChild><button className="lightbox-close icon-button" aria-label="Cerrar fotografía"><X size={24}/></button></DialogClose>{photo!==null&&<><img src={`/assets/${gallery[photo].src}`} alt={gallery[photo].alt}/><div className="lightbox-controls"><button className="icon-button" onClick={()=>setPhoto((photo+gallery.length-1)%gallery.length)} aria-label="Fotografía anterior"><ArrowLeft size={22}/></button><div><p>{gallery[photo].label}</p><span>{photo+1} / {gallery.length}</span></div><button className="icon-button" onClick={()=>setPhoto((photo+1)%gallery.length)} aria-label="Fotografía siguiente"><ArrowRight size={22}/></button></div></>}</DialogContent></Dialog>
+ </>
+}
